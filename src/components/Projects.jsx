@@ -1,294 +1,419 @@
-import { useRef, useState } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { Github, ArrowUpRight, Sparkles, Rocket, Code2, Smartphone, Zap, Globe } from 'lucide-react';
-
-// 3D Tilt Card Component
-const TiltCard = ({ children, className }) => {
-  const ref = useRef(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["12deg", "-12deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-12deg", "12deg"]);
-
-  const handleMouseMove = (e) => {
-    const rect = ref.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateY,
-        rotateX,
-        transformStyle: "preserve-3d",
-      }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-// Project Card Component
-const ProjectCard = ({ project, index }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const Icon = project.icon;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, delay: index * 0.15, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <TiltCard className="h-full perspective-1000">
-        <motion.div
-          onHoverStart={() => setIsHovered(true)}
-          onHoverEnd={() => setIsHovered(false)}
-          className="relative h-full p-8 rounded-3xl bg-gradient-to-br from-white/[0.03] to-transparent border border-white/[0.05] overflow-hidden group cursor-pointer"
-          style={{ transformStyle: "preserve-3d" }}
-        >
-          {/* Gradient Hover Effect */}
-          <motion.div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-            style={{
-              background: `radial-gradient(600px circle at ${isHovered ? '50%' : '0%'} ${isHovered ? '50%' : '0%'}, ${project.glowColor}15, transparent 40%)`,
-            }}
-          />
-
-          {/* Animated Border Gradient */}
-          <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div className="absolute inset-[-1px] rounded-3xl" style={{
-              background: `linear-gradient(135deg, ${project.glowColor}40, transparent 50%, ${project.glowColor}20)`,
-            }} />
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10" style={{ transform: "translateZ(50px)" }}>
-            {/* Header */}
-            <div className="flex items-start justify-between mb-6">
-              <motion.div
-                className={`p-4 rounded-2xl bg-gradient-to-br ${project.iconBg} border border-white/10 shadow-lg`}
-                animate={isHovered ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Icon className="w-7 h-7 text-white" />
-              </motion.div>
-
-              <div className="flex items-center gap-2">
-                {project.featured && (
-                  <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-semibold">
-                    <Sparkles className="w-3 h-3" />
-                    Featured
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Title & Description */}
-            <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/60 transition-all duration-500">
-              {project.title}
-            </h3>
-
-            <p className="text-white/50 text-sm leading-relaxed mb-6">
-              {project.description}
-            </p>
-
-            {/* Impact Metrics */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              {project.metrics.map((metric, i) => (
-                <div key={i} className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-                  <span className="text-xs font-medium text-white/70">{metric}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Tech Stack */}
-            <div className="flex flex-wrap gap-2 mb-8">
-              {project.tech.map((tech, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-300 border border-indigo-500/20"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-
-            {/* Links */}
-            <div className="flex items-center gap-4">
-              {project.liveLink && (
-                <motion.a
-                  href={project.liveLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-semibold hover:shadow-lg hover:shadow-white/20 transition-shadow"
-                >
-                  View Live
-                  <ArrowUpRight className="w-4 h-4" />
-                </motion.a>
-              )}
-
-              {project.repoLink && (
-                <motion.a
-                  href={project.repoLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-sm font-medium hover:border-white/40 hover:text-white transition-all"
-                >
-                  <Github className="w-4 h-4" />
-                  Code
-                </motion.a>
-              )}
-            </div>
-          </div>
-
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-white/[0.02] to-transparent rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-white/[0.02] to-transparent rounded-full blur-2xl pointer-events-none" />
-        </motion.div>
-      </TiltCard>
-    </motion.div>
-  );
-};
+import { useRef, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Github, ExternalLink, Code2, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Projects = () => {
-  const projects = [
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const scrollRef = useRef(null);
+
+  // Featured Projects (Top 10 Most Advanced)
+  const featuredProjects = [
     {
-      title: "FitBill - Gym Ecosystem",
-      description: "Complete gym management SaaS with membership tracking, QR check-ins, and real-time financial analytics. Automated renewals cut admin time by 40%.",
-      tech: ["React Native", "Express.js", "Prisma", "AWS Lambda", "PostgreSQL"],
-      metrics: ["100% Renewal Automation", "40% Time Saved", "500+ Active Users"],
-      liveLink: "http://youtube.com/watch?v=Dbkf_2kh1ho",
-      repoLink: "https://github.com/nithinmanda",
-      icon: Smartphone,
-      iconBg: "from-indigo-500/20 to-blue-500/20",
-      glowColor: "#6366f1",
-      featured: true,
+      name: 'ByteForge Scaffold',
+      category: 'Cybersecurity',
+      tech: 'Pentesting Framework',
+      desc: 'Advanced web application penetration testing framework with automated vulnerability scanning and exploitation',
+      icon: '🛡️'
     },
     {
-      title: "Serverless Attendance System",
-      description: "Zero-cost attendance tracking leveraging AWS Lambda and BeautifulSoup for real-time HTML parsing. Handles 3,000+ daily users with sub-2s response times.",
-      tech: ["AWS Lambda", "Python", "DynamoDB", "BeautifulSoup"],
-      metrics: ["3K+ Daily Users", "10K+ Requests/Day", "Zero Cost"],
-      liveLink: "https://github.com/sri-ganeshk/Attendance_tracker",
-      repoLink: "https://github.com/sri-ganeshk/Attendance_tracker",
-      icon: Zap,
-      iconBg: "from-yellow-500/20 to-orange-500/20",
-      glowColor: "#eab308",
-      featured: true,
+      name: 'AI Decision Copilot',
+      category: 'AI/ML',
+      tech: 'AI Agent',
+      desc: 'Intelligent decision-making assistant powered by advanced AI agents and reasoning capabilities',
+      icon: '🤖'
     },
     {
-      title: "StudySphere - AI EdTech",
-      description: "AI-powered learning platform using Google Gemini to auto-generate flashcards, summaries, and quizzes from any topic. Won IWD Hackathon.",
-      tech: ["Next.js", "Google Gemini API", "PostgreSQL", "TailwindCSS"],
-      metrics: ["Hackathon Winner", "AI-Powered", "Personalized Learning"],
-      liveLink: "https://hackthon-six.vercel.app/",
-      repoLink: null,
-      icon: Rocket,
-      iconBg: "from-pink-500/20 to-rose-500/20",
-      glowColor: "#ec4899",
-      featured: false,
+      name: 'Zero Trust Network Access',
+      category: 'Cybersecurity',
+      tech: 'ZTNA',
+      desc: 'Next-generation zero-trust security architecture with identity-based access control',
+      icon: '🔒'
     },
     {
-      title: "Movie Review Platform",
-      description: "Real-time movie discovery app with TMDB integration, JWT authentication, and responsive design. Full user accounts with favorites and reviews.",
-      tech: ["React", "MongoDB", "TMDB API", "JWT", "TailwindCSS"],
-      metrics: ["Real-time Data", "Secure Auth", "Responsive UI"],
-      liveLink: "https://movie-review-omega-seven.vercel.app/",
-      repoLink: null,
-      icon: Globe,
-      iconBg: "from-purple-500/20 to-violet-500/20",
-      glowColor: "#8b5cf6",
-      featured: false,
+      name: 'NFT Marketplace',
+      category: 'Blockchain',
+      tech: 'Ethereum',
+      desc: 'Decentralized marketplace for digital assets with smart contract integration and IPFS storage',
+      icon: '🎨'
+    },
+    {
+      name: 'Healthcare Management System',
+      category: 'AI/ML',
+      tech: 'AI + Full Stack',
+      desc: 'Comprehensive healthcare platform with AI-powered diagnosis, appointment scheduling, and medical reports',
+      icon: '🏥'
+    },
+    {
+      name: 'Multi-Cloud Deployment',
+      category: 'Cloud Computing',
+      tech: 'Kubernetes',
+      desc: 'Enterprise-grade infrastructure orchestration across AWS, GCP, and Azure with auto-scaling',
+      icon: '☁️'
+    },
+    {
+      name: 'Personal AI Knowledge Base',
+      category: 'AI/ML',
+      tech: 'RAG + Second Brain',
+      desc: 'AI-powered personal knowledge management system using retrieval-augmented generation',
+      icon: '📚'
+    },
+    {
+      name: 'AI Business Analyst',
+      category: 'AI/ML',
+      tech: 'SQL Agent',
+      desc: 'Intelligent AI agent that analyzes business data, generates insights, and writes SQL queries autonomously',
+      icon: '📊'
+    },
+    {
+      name: 'Enterprise ERP System',
+      category: 'Web Development',
+      tech: 'Full Stack',
+      desc: 'Complete enterprise resource planning system for startups with inventory, HR, and finance modules',
+      icon: '🏢'
+    },
+    {
+      name: 'Privacy-Preserving ML Framework',
+      category: 'Cybersecurity',
+      tech: 'Federated Learning',
+      desc: 'Advanced machine learning framework with differential privacy and secure multi-party computation',
+      icon: '🔐'
     },
   ];
 
-  return (
-    <section id="projects" className="section-padding relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 grid-bg opacity-30"></div>
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-pink-500/10 rounded-full blur-[150px] pointer-events-none" />
+  // All Projects (97 total)
+  const allProjects = [
+    // Web Development (28 projects)
+    { name: 'Weather App', category: 'Web Development', tech: 'React', icon: '🌤️' },
+    { name: 'School Markstatement Producer', category: 'Web Development', tech: 'Full Stack', icon: '📊' },
+    { name: 'CT Upskilling Platform', category: 'Web Development', tech: 'MERN', icon: '📚' },
+    { name: 'Byte Forge Club Website', category: 'Web Development', tech: 'React', icon: '🌐' },
+    { name: 'System Dashboard', category: 'Web Development', tech: 'React', icon: '📈' },
+    { name: 'Grocery Store', category: 'Web Development', tech: 'E-Commerce', icon: '🛒' },
+    { name: 'Result Database System', category: 'Web Development', tech: 'Full Stack', icon: '💾' },
+    { name: 'Cafe Management System', category: 'Web Development', tech: 'Full Stack', icon: '☕' },
+    { name: 'HUSTLE BOARD', category: 'Web Development', tech: 'React', icon: '✅' },
+    { name: 'Notes App', category: 'Web Development', tech: 'React', icon: '📝' },
+    { name: 'Scientific Calculator', category: 'Web Development', tech: 'JavaScript', icon: '🧮' },
+    { name: 'Blog Platform', category: 'Web Development', tech: 'Full Stack', icon: '✍️' },
+    { name: 'Expense Tracker', category: 'Web Development', tech: 'React', icon: '💰' },
+    { name: 'Portfolio Website Generator', category: 'Web Development', tech: 'React', icon: '🎯' },
+    { name: 'Code Snippet Manager', category: 'Web Development', tech: 'Full Stack', icon: '📦' },
+    { name: 'React Chat App', category: 'Web Development', tech: 'React', icon: '💬' },
+    { name: 'E-Commerce Website', category: 'Web Development', tech: 'Full Stack', icon: '🛍️' },
+    { name: 'MERN Project', category: 'Web Development', tech: 'MERN', icon: '🔧' },
+    { name: 'ERP System for Startups', category: 'Web Development', tech: 'Full Stack', icon: '🏢' },
+    { name: 'Bug Tracker + Agile Board', category: 'Web Development', tech: 'Full Stack', icon: '🐛' },
+    { name: 'Progressive Web App', category: 'Web Development', tech: 'PWA', icon: '📱' },
+    { name: 'Real-Time Collaboration Platform', category: 'Web Development', tech: 'WebSocket', icon: '🤝' },
+    { name: 'Social Media Platform', category: 'Web Development', tech: 'Full Stack', icon: '📲' },
+    { name: 'Offline-First Note Taking', category: 'Web Development', tech: 'PWA', icon: '📔' },
+    { name: 'Code Review Tool', category: 'Web Development', tech: 'AI', icon: '👀' },
 
-      <div className="container-custom relative z-10">
-        {/* Section Header */}
+    // AI/ML (30 projects)
+    { name: 'Personal Voice Assistant', category: 'AI/ML', tech: 'Python', icon: '🎤' },
+    { name: 'AI Chatbot', category: 'AI/ML', tech: 'NLP', icon: '🤖' },
+    { name: 'Face Recognition', category: 'AI/ML', tech: 'Computer Vision', icon: '👤' },
+    { name: 'AI Agent', category: 'AI/ML', tech: 'Python', icon: '🧠' },
+    { name: 'AI Mock Interview', category: 'AI/ML', tech: 'NLP', icon: '🎯' },
+    { name: 'Healthcare AI System', category: 'AI/ML', tech: 'AI + Full Stack', icon: '🏥' },
+    { name: 'Movie Recommender System', category: 'AI/ML', tech: 'ML', icon: '🎬' },
+    { name: 'Fake News Detection', category: 'AI/ML', tech: 'NLP', icon: '📰' },
+    { name: 'Image Recognition with CNNs', category: 'AI/ML', tech: 'Deep Learning', icon: '🖼️' },
+    { name: 'Stock Price Prediction', category: 'AI/ML', tech: 'ML', icon: '📈' },
+    { name: 'Natural Language Generation', category: 'AI/ML', tech: 'NLP', icon: '📝' },
+    { name: 'Computer Vision Projects', category: 'AI/ML', tech: 'CV', icon: '👁️' },
+    { name: 'Credit Card Fraud Detection', category: 'AI/ML', tech: 'ML', icon: '💳' },
+    { name: 'Handwritten Digit Recognition', category: 'AI/ML', tech: 'Deep Learning', icon: '🔢' },
+    { name: 'Music Genre Classification', category: 'AI/ML', tech: 'ML', icon: '🎵' },
+    { name: 'Social Media Sentiment Analysis', category: 'AI/ML', tech: 'NLP', icon: '😊' },
+    { name: 'Self-Driving Car Simulation', category: 'AI/ML', tech: 'RL', icon: '🚗' },
+    { name: 'Weather Prediction with ML', category: 'AI/ML', tech: 'ML', icon: '🌦️' },
+    { name: 'GANs for Image Generation', category: 'AI/ML', tech: 'Deep Learning', icon: '🎨' },
+    { name: 'Medical Diagnosis with ML', category: 'AI/ML', tech: 'ML', icon: '⚕️' },
+    { name: 'Conversational AI Chatbot', category: 'AI/ML', tech: 'NLP', icon: '💬' },
+    { name: 'Customer Churn Prediction', category: 'AI/ML', tech: 'ML', icon: '📊' },
+    { name: 'Fraud Detection System', category: 'AI/ML', tech: 'ML', icon: '🔍' },
+    { name: 'Budget Tracking with AI', category: 'AI/ML', tech: 'AI + React', icon: '💰' },
+    { name: 'Music Recommendation System', category: 'AI/ML', tech: 'ML', icon: '🎧' },
+    { name: 'AI Decision Copilot', category: 'AI/ML', tech: 'AI Agent', icon: '🤖' },
+    { name: 'Personal AI Knowledge Base', category: 'AI/ML', tech: 'RAG', icon: '📚' },
+    { name: 'AI Business Analyst', category: 'AI/ML', tech: 'AI Agent', icon: '📊' },
+    { name: 'AI Customer Support Copilot', category: 'AI/ML', tech: 'AI Agent', icon: '💁' },
+    { name: 'AI Portfolio Reviewer', category: 'AI/ML', tech: 'AI Agent', icon: '👔' },
+
+    // Data Science (10 projects)
+    { name: 'Sales Data Analysis', category: 'Data Science', tech: 'Python', icon: '📊' },
+    { name: 'Customer Segmentation', category: 'Data Science', tech: 'K-Means', icon: '👥' },
+    { name: 'Movie Review Analysis', category: 'Data Science', tech: 'Python', icon: '🎬' },
+    { name: 'E-Commerce Predictive Analytics', category: 'Data Science', tech: 'ML', icon: '🛒' },
+    { name: 'Real-time Analytics with Spark', category: 'Data Science', tech: 'Big Data', icon: '⚡' },
+    { name: 'Automated Data Pipeline', category: 'Data Science', tech: 'ETL', icon: '🔄' },
+    { name: 'AI-Powered BI Dashboard', category: 'Data Science', tech: 'AI + BI', icon: '📈' },
+    { name: 'Exploratory Data Analysis', category: 'Data Science', tech: 'Python', icon: '🔬' },
+    { name: 'Interactive Data Viz', category: 'Data Science', tech: 'D3.js', icon: '📉' },
+
+    // Cybersecurity (10 projects)
+    { name: 'Fingerprint Voting System', category: 'Cybersecurity', tech: 'Biometric', icon: '🔐' },
+    { name: 'Cloud Security IDS', category: 'Cybersecurity', tech: 'Cloud Security', icon: '🛡️' },
+    { name: 'Zero Trust Network Access', category: 'Cybersecurity', tech: 'ZTNA', icon: '🔒' },
+    { name: 'AI-Driven Threat Detection', category: 'Cybersecurity', tech: 'AI Security', icon: '🚨' },
+    { name: 'Blockchain Secure Sharing', category: 'Cybersecurity', tech: 'Blockchain', icon: '🔗' },
+    { name: 'ByteForge Scaffold', category: 'Cybersecurity', tech: 'Pentesting', icon: '🛠️' },
+    { name: 'Cloud Security Posture Mgmt', category: 'Cybersecurity', tech: 'Cloud', icon: '☁️' },
+    { name: 'Ransomware Analysis', category: 'Cybersecurity', tech: 'Malware', icon: '🦠' },
+    { name: 'User Anomaly Detection', category: 'Cybersecurity', tech: 'AI', icon: '👤' },
+    { name: 'Privacy-Preserving ML', category: 'Cybersecurity', tech: 'Privacy', icon: '🔐' },
+
+    // Cloud Computing (9 projects)
+    { name: 'Cloud File Storage', category: 'Cloud Computing', tech: 'AWS', icon: '📁' },
+    { name: 'Multi-Cloud Hosting', category: 'Cloud Computing', tech: 'AWS/GCP/Azure', icon: '☁️' },
+    { name: 'Cloud Chat Application', category: 'Cloud Computing', tech: 'AWS', icon: '💬' },
+    { name: 'Serverless Web App', category: 'Cloud Computing', tech: 'Lambda', icon: '⚡' },
+    { name: 'Auto-Scaling Load Balancer', category: 'Cloud Computing', tech: 'DevOps', icon: '⚖️' },
+    { name: 'Cloud IoT Management', category: 'Cloud Computing', tech: 'IoT', icon: '📡' },
+    { name: 'Multi-Cloud Kubernetes', category: 'Cloud Computing', tech: 'K8s', icon: '🚢' },
+    { name: 'Real-Time Video Processing', category: 'Cloud Computing', tech: 'Cloud', icon: '🎥' },
+    { name: 'Cloud Document Collaboration', category: 'Cloud Computing', tech: 'Real-time', icon: '📄' },
+
+    // Blockchain (9 projects)
+    { name: 'Decentralized File Storage', category: 'Blockchain', tech: 'Java + IPFS', icon: '📦' },
+    { name: 'Simple Blockchain', category: 'Blockchain', tech: 'Python', icon: '⛓️' },
+    { name: 'Decentralized To-Do List', category: 'Blockchain', tech: 'Ethereum', icon: '✅' },
+    { name: 'Smart Contract Voting', category: 'Blockchain', tech: 'Solidity', icon: '🗳️' },
+    { name: 'Blockchain Digital Identity', category: 'Blockchain', tech: 'Ethereum', icon: '🆔' },
+    { name: 'Secure File Sharing', category: 'Blockchain', tech: 'IPFS', icon: '🔐' },
+    { name: 'Decentralized Marketplace', category: 'Blockchain', tech: 'Smart Contracts', icon: '🏪' },
+    { name: 'NFT Marketplace', category: 'Blockchain', tech: 'Ethereum', icon: '🖼️' },
+    { name: 'Blockchain Supply Chain', category: 'Blockchain', tech: 'Hyperledger', icon: '📦' },
+    { name: 'Crypto Trading Bot', category: 'Blockchain', tech: 'Analytics', icon: '💹' },
+
+    // AR/VR (4 projects)
+    { name: 'Language Learning with AR', category: 'AR/VR', tech: 'AR', icon: '🌐' },
+    { name: 'Hand-Tracking AR UI', category: 'AR/VR', tech: 'AR', icon: '👋' },
+    { name: 'Face Emotion Persona Overlay', category: 'AR/VR', tech: 'CV + AR', icon: '😊' },
+    { name: 'MirrorClone FX', category: 'AR/VR', tech: 'AR', icon: '🪞' },
+    { name: 'Air Swipe Music Controller', category: 'AR/VR', tech: 'Gesture', icon: '🎵' },
+  ];
+
+  const categories = ['All', 'Web Development', 'AI/ML', 'Cybersecurity', 'Blockchain', 'Cloud Computing', 'Data Science', 'AR/VR'];
+
+  const filteredProjects = selectedCategory === 'All'
+    ? allProjects
+    : allProjects.filter(p => p.category === selectedCategory);
+
+  // Auto-advance carousel (slower now)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % featuredProjects.length);
+    }, 8000); // Changed from 5000 to 8000 (8 seconds)
+    return () => clearInterval(timer);
+  }, []);
+
+  // Infinite scroll animation - truly continuous
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    let animationId;
+    let scrollPosition = 0;
+    const scrollSpeed = 0.5;
+
+    const animate = () => {
+      scrollPosition += scrollSpeed;
+
+      // Seamless loop - when reaching halfway, reset smoothly
+      const maxScroll = scrollContainer.scrollWidth / 2;
+      if (scrollPosition >= maxScroll) {
+        scrollPosition = 0;
+      }
+
+      scrollContainer.scrollLeft = scrollPosition;
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, []); // Empty dependency array - runs independently!
+
+  return (
+    <section id="projects" className="py-24 relative overflow-hidden bg-black">
+      {/* Background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto px-8 relative z-10">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 mb-8"
-          >
-            <Code2 className="w-4 h-4 text-indigo-400" />
-            <span className="text-sm font-medium text-indigo-300">Selected Works</span>
-          </motion.div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-xl">
+            <Code2 className="w-4 h-4 text-cyan-400" />
+            <span className="text-sm font-medium text-cyan-400">120+ Projects Completed</span>
+          </div>
 
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6">
-            <span className="text-white">Projects that</span>
-            <br />
-            <span className="gradient-text">Make an Impact</span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6">
+            Project <span className="text-cyan-400">Showcase</span>
           </h2>
-
-          <p className="text-white/50 text-lg md:text-xl max-w-2xl mx-auto">
-            Real-world solutions demonstrating problem-solving, scalability, and engineering excellence.
+          <p className="text-white/60 text-lg max-w-2xl mx-auto">
+            Explore my diverse portfolio spanning cybersecurity, AI/ML, blockchain, cloud computing, and more
           </p>
         </motion.div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {projects.map((project, index) => (
-            <ProjectCard key={index} project={project} index={index} />
-          ))}
+        {/* Featured Projects Carousel */}
+        <div className="relative mb-20">
+          <div className="relative h-96 rounded-3xl overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 p-12 bg-gradient-to-br from-cyan-500/20 to-purple-500/20 backdrop-blur-xl border border-white/10 rounded-3xl"
+              >
+                <div className="flex flex-col md:flex-row items-center gap-12 h-full">
+                  <div className="flex-1">
+                    <div className="text-6xl mb-4">{featuredProjects[currentSlide].icon}</div>
+                    <h3 className="text-4xl font-bold text-white mb-4">
+                      {featuredProjects[currentSlide].name}
+                    </h3>
+                    <p className="text-xl text-white/70 mb-6">
+                      {featuredProjects[currentSlide].desc}
+                    </p>
+                    <div className="flex items-center gap-4 mb-6">
+                      <span className="px-4 py-2 rounded-full bg-cyan-500/20 text-cyan-400 font-semibold">
+                        {featuredProjects[currentSlide].tech}
+                      </span>
+                      <span className="text-white/60">
+                        {featuredProjects[currentSlide].category}
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <button className="px-6 py-3 rounded-xl bg-cyan-500 text-white font-bold hover:bg-cyan-600 transition-all flex items-center gap-2">
+                        <ExternalLink className="w-5 h-5" />
+                        View Project
+                      </button>
+                      <button className="px-6 py-3 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-all flex items-center gap-2">
+                        <Github className="w-5 h-5" />
+                        Code
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Carousel Controls */}
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev - 1 + featuredProjects.length) % featuredProjects.length)}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
+            >
+              <ChevronLeft className="w-6 h-6 text-white" />
+            </button>
+            <button
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % featuredProjects.length)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
+            >
+              <ChevronRight className="w-6 h-6 text-white" />
+            </button>
+
+            {/* Dots */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+              {featuredProjects.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${index === currentSlide ? 'bg-cyan-400 w-8' : 'bg-white/30'
+                    }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* View More CTA */}
+        {/* Category Filters */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-          className="mt-16 text-center"
+          className="flex flex-wrap justify-center gap-3 mb-12"
         >
-          <a
-            href="https://github.com/nithinmanda"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-full border-2 border-white/10 text-white/70 font-medium hover:border-indigo-500/50 hover:text-white hover:bg-indigo-500/10 transition-all duration-500 group"
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-6 py-3 rounded-full font-semibold transition-all ${selectedCategory === cat
+                ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+                : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
+                }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Infinite Scroll Grid */}
+        <div className="relative overflow-hidden">
+          <div
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-hidden py-4"
+            style={{ scrollBehavior: 'auto' }}
           >
-            <Github className="w-5 h-5" />
-            View All Projects on GitHub
-            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-          </a>
+            {/* Duplicate for seamless loop */}
+            {[...filteredProjects, ...filteredProjects].map((project, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="flex-shrink-0 w-80 p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all hover:scale-105 group"
+              >
+                <div className="text-4xl mb-4">{project.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
+                  {project.name}
+                </h3>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-sm font-semibold">
+                    {project.tech}
+                  </span>
+                </div>
+                <p className="text-sm text-white/60 mb-4">{project.category}</p>
+                <div className="flex gap-2">
+                  <button className="flex-1 px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-all text-sm font-semibold flex items-center justify-center gap-2">
+                    <ExternalLink className="w-4 h-4" />
+                    View
+                  </button>
+                  <button className="px-4 py-2 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 transition-all">
+                    <Github className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Project Counter */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-center mt-12"
+        >
+          <p className="text-white/40 text-sm">
+            Showing <strong className="text-cyan-400">{filteredProjects.length}</strong> projects
+            {selectedCategory !== 'All' && ` in ${selectedCategory}`}
+          </p>
         </motion.div>
       </div>
     </section>

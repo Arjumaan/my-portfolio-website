@@ -69,10 +69,11 @@ const Header = () => {
               onClick={(e) => scrollToSection(e, '#home')}
               className="relative group"
             >
-              <span className="text-2xl font-bold font-display tracking-tight">
-                <span className="gradient-text">NM</span>
-                <span className="text-white">.</span>
-              </span>
+              <img
+                src="/ar-logo.png"
+                alt="AR Logo"
+                className="h-24 w-auto transition-transform group-hover:scale-110"
+              />
               <Sparkles className="absolute -top-1 -right-3 w-3 h-3 text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </a>
 

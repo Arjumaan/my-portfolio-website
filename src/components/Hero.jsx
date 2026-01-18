@@ -1,426 +1,207 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { ArrowRight, Download, Github, Linkedin, Mail, Sparkles, Star, Zap } from 'lucide-react';
-import Avatar from './Avatar';
-
-// Particle/Star Background Component
-const ParticleField = () => {
-  const particles = Array.from({ length: 50 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 2 + 1,
-    duration: Math.random() * 3 + 2,
-    delay: Math.random() * 2,
-  }));
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full bg-white"
-          style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-          }}
-          animate={{
-            opacity: [0.2, 0.8, 0.2],
-            scale: [1, 1.5, 1],
-          }}
-          transition={{
-            duration: particle.duration,
-            repeat: Infinity,
-            delay: particle.delay,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-// Floating 3D Orbs
-const FloatingOrbs = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {/* Main Gradient Orb */}
-    <motion.div
-      className="absolute w-[600px] h-[600px] rounded-full opacity-30"
-      style={{
-        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%)',
-        top: '-10%',
-        right: '-10%',
-        filter: 'blur(60px)',
-      }}
-      animate={{
-        x: [0, 50, 0],
-        y: [0, 30, 0],
-        scale: [1, 1.1, 1],
-      }}
-      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-    />
-
-    {/* Pink Orb */}
-    <motion.div
-      className="absolute w-[400px] h-[400px] rounded-full opacity-20"
-      style={{
-        background: 'radial-gradient(circle, rgba(236, 72, 153, 0.5) 0%, transparent 70%)',
-        bottom: '10%',
-        left: '-5%',
-        filter: 'blur(80px)',
-      }}
-      animate={{
-        x: [0, -30, 0],
-        y: [0, 50, 0],
-        scale: [1, 1.2, 1],
-      }}
-      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-    />
-
-    {/* Purple Orb */}
-    <motion.div
-      className="absolute w-[300px] h-[300px] rounded-full opacity-25"
-      style={{
-        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, transparent 70%)',
-        top: '40%',
-        left: '30%',
-        filter: 'blur(60px)',
-      }}
-      animate={{
-        x: [0, 40, 0],
-        y: [0, -40, 0],
-      }}
-      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-    />
-  </div>
-);
-
-// Animated Badge Component
-const AnimatedBadge = ({ children, icon: Icon }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.5 }}
-    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 backdrop-blur-sm"
-  >
-    <Icon className="w-4 h-4 text-indigo-400" />
-    <span className="text-sm font-medium text-indigo-300">{children}</span>
-    <span className="relative flex h-2 w-2">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-    </span>
-  </motion.div>
-);
-
-// Magnetic Social Icon
-const MagneticIcon = ({ href, icon: Icon, label, color }) => {
-  const ref = useRef(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const springConfig = { damping: 25, stiffness: 400 };
-  const xSpring = useSpring(x, springConfig);
-  const ySpring = useSpring(y, springConfig);
-
-  const handleMouseMove = (e) => {
-    const rect = ref.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    x.set((e.clientX - centerX) * 0.3);
-    y.set((e.clientY - centerY) * 0.3);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  return (
-    <motion.a
-      ref={ref}
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ x: xSpring, y: ySpring }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-      className={`relative p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm transition-colors duration-300 hover:border-${color}-500/50 hover:bg-${color}-500/10 group`}
-    >
-      <Icon className={`w-6 h-6 text-white/60 group-hover:text-${color}-400 transition-colors`} />
-      <span className="sr-only">{label}</span>
-    </motion.a>
-  );
-};
-
-// Stats Counter with Animation
-const StatCounter = ({ value, label, suffix = '' }) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const duration = 2000;
-    const steps = 60;
-    const increment = value / steps;
-    let current = 0;
-
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= value) {
-        setCount(value);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, duration / steps);
-
-    return () => clearInterval(timer);
-  }, [value]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="text-center"
-    >
-      <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
-        {count}{suffix}
-      </div>
-      <div className="text-sm text-white/50 uppercase tracking-wider">{label}</div>
-    </motion.div>
-  );
-};
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, Download, Github, Linkedin, Mail, Facebook, Shield, Brain, Server, Lock, Computer, Dna } from 'lucide-react';
 
 const Hero = () => {
   const containerRef = useRef(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: ((e.clientX - rect.left) / rect.width) * 100,
-          y: ((e.clientY - rect.top) / rect.height) * 100,
-        });
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.3
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        ease: [0.16, 1, 0.3, 1]
-      }
-    }
-  };
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
 
   return (
     <section
       ref={containerRef}
       id="home"
-      className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20"
-      style={{
-        '--mouse-x': `${mousePosition.x}%`,
-        '--mouse-y': `${mousePosition.y}%`,
-      }}
+      className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-b from-[#0a0a1a] to-black py-32"
     >
-      {/* Aurora Background */}
-      <div className="aurora"></div>
+      {/* Clean Background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+      </div>
 
-      {/* Animated Background Elements */}
-      <FloatingOrbs />
-      <ParticleField />
+      <div className="container mx-auto px-8 lg:px-16 max-w-[1400px] relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-16 items-center">
 
-      {/* Grid Overlay */}
-      <div className="absolute inset-0 grid-bg opacity-50"></div>
+          {/* LEFT: Content - Takes 3 columns */}
+          <div className="lg:col-span-3 space-y-10 lg:pt-20">
 
-      {/* Spotlight Effect */}
-      <div className="absolute inset-0 spotlight pointer-events-none"></div>
-
-      <div className="container-custom relative z-10 w-full">
-        <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-16 lg:gap-24">
-
-          {/* Text Content */}
-          <motion.div
-            className="flex-1 text-center lg:text-left"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.div variants={itemVariants}>
-              <AnimatedBadge icon={Sparkles}>Open for Opportunities</AnimatedBadge>
+            {/* Name */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-cyan-400 leading-tight">
+                ARJUMAAN.M
+              </h1>
+              <div className="h-2 w-32 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full mt-6" />
             </motion.div>
 
-            <motion.h1
-              variants={itemVariants}
-              className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight mt-8 mb-6 leading-[0.9]"
-            >
-              <span className="block text-white">Crafting</span>
-              <span className="block gradient-text">Digital Magic</span>
-              <span className="block text-white/80 text-4xl md:text-5xl lg:text-6xl mt-4 font-light italic font-display">
-                with Code & Creativity
-              </span>
-            </motion.h1>
-
-            <motion.p
-              variants={itemVariants}
-              className="text-white/60 text-lg md:text-xl max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
-            >
-              Hi, I&apos;m <span className="text-white font-semibold">Nithin Manda</span> — a Full-Stack Developer
-              specializing in <span className="text-indigo-400">React</span>, <span className="text-pink-400">Node.js</span>,
-              and <span className="text-purple-400">Cloud Architecture</span>. I transform complex problems
-              into elegant, performant solutions.
-            </motion.p>
-
+            {/* Role */}
             <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-4"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="space-y-4"
             >
-              <a href="#projects" className="btn btn-primary magnetic-btn group">
-                <span className="relative z-10 flex items-center">
-                  Explore My Work
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-white">
+                Security Architect & AI/ML Engineer
+              </h2>
+              <p className="text-xl text-white/70 leading-relaxed max-w-2xl">
+                Building Intelligent CyberSecurity Systems and AI-powered architectures with Agents
+              </p>
+
+              {/* Bio Paragraph */}
+              <p className="text-base text-white/60 leading-relaxed max-w-2xl pt-2">
+                I'm a passionate technologist specializing in cybersecurity, artificial intelligence, and cloud architectures.
+                With expertise spanning full-stack development, blockchain, and system design, I create secure, scalable solutions
+                that push the boundaries of what's possible. Currently leading innovative projects at ByteForge, I'm dedicated to
+                building the next generation of intelligent security systems.
+              </p>
+            </motion.div>
+
+            {/* Skills */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="flex flex-wrap gap-3"
+            >
+              {[
+                { icon: Shield, text: 'Cybersecurity' },
+                { icon: Brain, text: 'AI/ML' },
+                { icon: Server, text: 'Cloud Computing' },
+                { icon: Lock, text: 'Blockchain' },
+                { icon: Dna, text: 'Full Stack' },
+                { icon: Computer, text: 'System Design' },
+              ].map((skill, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-cyan-500/50 transition-all"
+                >
+                  <skill.icon className="w-5 h-5 text-cyan-400" />
+                  <span className="text-sm font-semibold text-white">{skill.text}</span>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="flex flex-wrap gap-4"
+            >
+              <a
+                href="#projects"
+                className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl font-bold text-white hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/25 flex items-center gap-2"
+              >
+                View Projects
+                <ArrowRight className="w-5 h-5" />
               </a>
 
-              <a href="/Nithin_resume.pdf" target="_blank" rel="noopener noreferrer" className="btn btn-outline group">
-                <Download className="mr-2 w-5 h-5 group-hover:-translate-y-1 transition-transform" />
+              <a
+                href="/resume"
+                className="px-8 py-4 bg-white/5 border-2 border-white/20 rounded-xl font-semibold text-white hover:bg-white/10 hover:border-white/30 transition-all flex items-center gap-2"
+              >
+                <Download className="w-5 h-5" />
                 Resume
               </a>
             </motion.div>
 
+            {/* Social */}
             <motion.div
-              variants={itemVariants}
-              className="mt-12 flex items-center justify-center lg:justify-start gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex gap-4"
             >
-              <MagneticIcon href="https://github.com/nithinmanda" icon={Github} label="GitHub" color="indigo" />
-              <MagneticIcon href="https://www.linkedin.com/in/nithin-manda" icon={Linkedin} label="LinkedIn" color="blue" />
-              <MagneticIcon href="mailto:goudnithin77@gmail.com" icon={Mail} label="Email" color="pink" />
+              {[
+                { href: "https://github.com/Arjumaan", icon: Github },
+                { href: "https://linkedin.com/in/Arjumaan", icon: Linkedin },
+                { href: "https://facebook.com/Arjumaan", icon: Facebook },
+                { href: "mailto:arjumaan21@gmail.com", icon: Mail },
+              ].map((social, i) => (
+                <a
+                  key={i}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all"
+                >
+                  <social.icon className="w-5 h-5 text-white/70 hover:text-cyan-400" />
+                </a>
+              ))}
             </motion.div>
-          </motion.div>
+          </div>
 
-          {/* Visual/Avatar with 3D Effect */}
+          {/* RIGHT: Image - Takes 2 columns */}
           <motion.div
-            className="flex-1 relative"
-            initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            style={{ y }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="lg:col-span-2"
           >
-            <div className="relative w-80 h-80 md:w-[450px] md:h-[450px] mx-auto">
-              {/* Animated Rings */}
-              <motion.div
-                className="absolute inset-0 rounded-full border border-indigo-500/20"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.div
-                className="absolute inset-4 rounded-full border border-pink-500/20"
-                animate={{ rotate: -360 }}
-                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.div
-                className="absolute inset-8 rounded-full border border-purple-500/20"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              />
+            <div className="relative max-w-md ml-auto">
+              {/* Glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-3xl blur-2xl" />
 
-              {/* Glow Background */}
-              <div className="absolute inset-12 bg-gradient-to-br from-indigo-500/20 via-pink-500/10 to-purple-500/20 rounded-full blur-3xl animate-pulse-glow"></div>
+              {/* Image Card */}
+              <div className="relative aspect-[3/4] rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+                <img
+                  src="/hero-portrait.jpg"
+                  alt="Arjumaan M"
+                  className="w-full h-full object-cover"
+                />
 
-              {/* Avatar Container */}
-              <div className="absolute inset-16 z-10 overflow-hidden rounded-full border-2 border-white/10 bg-surface">
-                <div className="w-full h-full scale-150 translate-y-8">
-                  <Avatar />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                {/* Status Badge */}
+                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-black/60 backdrop-blur-xl border border-cyan-500/30">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-cyan-400 font-mono mb-1">STATUS</div>
+                      <div className="text-lg font-bold text-white flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                        Online & Secure
+                      </div>
+                    </div>
+                    <Shield className="w-8 h-8 text-cyan-400/30" />
+                  </div>
                 </div>
               </div>
-
-              {/* Floating Tech Badges */}
-              <motion.div
-                className="absolute -top-4 right-10 px-4 py-2 glass-vibrant rounded-xl shadow-glow"
-                animate={{ y: [-10, 10, -10] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-yellow-400" />
-                  <span className="font-mono text-sm font-bold text-white">React.js</span>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="absolute bottom-10 -left-8 px-4 py-2 glass-vibrant rounded-xl shadow-glow-pink"
-                animate={{ y: [10, -10, 10] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              >
-                <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-pink-400" />
-                  <span className="font-mono text-sm font-bold text-white">15+ Projects</span>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="absolute top-1/2 -right-12 px-4 py-2 glass-vibrant rounded-xl shadow-glow-purple"
-                animate={{ x: [-10, 10, -10] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
-                  <span className="font-mono text-sm font-bold text-white">4★ CodeChef</span>
-                </div>
-              </motion.div>
             </div>
           </motion.div>
 
         </div>
 
-        {/* Stats Section */}
+        {/* Stats Row - Below everything */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
-          className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 py-8 px-6 glass rounded-3xl border border-white/5"
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-16"
         >
-          <StatCounter value={15} suffix="+" label="Projects" />
-          <StatCounter value={600} suffix="+" label="DSA Problems" />
-          <StatCounter value={3} suffix="+" label="Years Coding" />
-          <StatCounter value={100} suffix="%" label="Passion" />
+          {[
+            { label: 'Projects', value: '120+' },
+            { label: 'Security Level', value: 'Elite' },
+            { label: 'Uptime', value: '99.9%' },
+            { label: 'Deploy Speed', value: 'Fast' },
+            { label: 'Certified Courses', value: '80+' },
+            { label: 'Certificates', value: '12+' },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-cyan-500/30 transition-all text-center"
+            >
+              <div className="text-3xl font-bold text-cyan-400 mb-2">{stat.value}</div>
+              <div className="text-sm text-white/60 uppercase tracking-wider">{stat.label}</div>
+            </div>
+          ))}
         </motion.div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <div className="w-6 h-10 border-2 border-white/20 rounded-full flex justify-center p-2">
-          <motion.div
-            className="w-1 h-2 bg-gradient-to-b from-indigo-500 to-pink-500 rounded-full"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-        </div>
-      </motion.div>
     </section>
   );
 };

@@ -17,9 +17,8 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: Github, href: 'https://github.com/nithinmanda', label: 'GitHub' },
-    { icon: Linkedin, href: 'https://www.linkedin.com/in/nithin-manda', label: 'LinkedIn' },
-    { icon: Twitter, href: 'https://x.com/kaushal_dev_', label: 'Twitter' },
+    { icon: Github, href: 'https://github.com/Arjumaan', label: 'GitHub' },
+    { icon: Linkedin, href: 'https://www.linkedin.com/in/Arjumaan', label: 'LinkedIn' },
   ];
 
   return (
@@ -35,13 +34,14 @@ const Footer = () => {
           {/* Brand */}
           <div>
             <a href="#home" className="inline-block mb-6">
-              <span className="text-3xl font-bold font-display">
-                <span className="gradient-text">NM</span>
-                <span className="text-white">.</span>
-              </span>
+              <img
+                src="/ar-logo.png"
+                alt="AR Logo"
+                className="h-24 w-auto"
+              />
             </a>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-              Full-Stack Developer crafting digital experiences with modern technologies and creative solutions.
+              Turning Ideas into Impact | Security Architect & AI/ML Engineer.
             </p>
           </div>
 
@@ -80,10 +80,10 @@ const Footer = () => {
               ))}
             </div>
             <a
-              href="mailto:goudnithin77@gmail.com"
+              href="mailto:arjumaan21@gmail.com"
               className="text-white/40 hover:text-indigo-400 text-sm transition-colors"
             >
-              goudnithin77@gmail.com
+              arjumaan21@gmail.com
             </a>
           </div>
         </div>
@@ -91,7 +91,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/5">
           <p className="text-white/30 text-sm flex items-center gap-2 mb-4 md:mb-0">
-            © {currentYear} Nithin Manda. Built with
+            © {currentYear} Arjumaan M. Built with
             <Heart className="w-4 h-4 text-pink-500 animate-pulse" />
             using React & TailwindCSS
           </p>
@@ -111,7 +111,7 @@ const Footer = () => {
 
       {/* Large Background Text */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[15vw] font-extrabold text-white/[0.02] whitespace-nowrap pointer-events-none select-none">
-        NITHIN
+        ARJUMAAN
       </div>
     </footer>
   );

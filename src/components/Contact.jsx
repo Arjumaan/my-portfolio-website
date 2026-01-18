@@ -117,7 +117,7 @@ const Contact = () => {
           from_name: formData.name,
           from_email: formData.email,
           message: formData.message,
-          to_email: 'goudnithin77@gmail.com'
+          to_email: 'arjumaan21@gmail.com'
         },
         import.meta.env.VITE_PUBLIC_KEY
       );
@@ -176,21 +176,21 @@ const Contact = () => {
               <ContactInfoCard
                 icon={Mail}
                 title="Email Me"
-                value="goudnithin77@gmail.com"
-                href="mailto:goudnithin77@gmail.com"
+                value="arjumaan21@gmail.com"
+                href="mailto:arjumaan21@gmail.com"
                 delay={0.1}
               />
               <ContactInfoCard
                 icon={Phone}
-                title="Call Me"
-                value="+91 9912491246"
-                href="tel:+919912491246"
+                title="Contact"
+                value="+919597230780"
+                href="tel:+919597230780"
                 delay={0.2}
               />
               <ContactInfoCard
                 icon={MapPin}
                 title="Location"
-                value="Hyderabad, India"
+                value="Coimbatore, India"
                 href="#"
                 delay={0.3}
               />
@@ -204,9 +204,8 @@ const Contact = () => {
             >
               <h4 className="text-lg font-bold text-white mb-6">Connect on Socials</h4>
               <div className="flex gap-4">
-                <SocialLink href="https://github.com/nithinmanda" icon={Github} label="GitHub" color="indigo" />
-                <SocialLink href="https://www.linkedin.com/in/nithin-manda" icon={Linkedin} label="LinkedIn" color="blue" />
-                <SocialLink href="https://x.com/kaushal_dev_" icon={Twitter} label="Twitter" color="pink" />
+                <SocialLink href="https://github.com/Arjumaan" icon={Github} label="GitHub" color="indigo" />
+                <SocialLink href="https://www.linkedin.com/in/Arjumaan" icon={Linkedin} label="LinkedIn" color="blue" />
               </div>
             </motion.div>
 

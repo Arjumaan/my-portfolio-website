@@ -43,10 +43,11 @@ const Loader = () => {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="relative mb-8"
         >
-          <span className="text-6xl font-extrabold font-display">
-            <span className="gradient-text">NM</span>
-            <span className="text-white">.</span>
-          </span>
+          <img
+            src="/ar-logo.png"
+            alt="AR Logo"
+            className="h-20 w-auto"
+          />
           <Sparkles className="absolute -top-2 -right-4 w-6 h-6 text-yellow-400 animate-pulse" />
         </motion.div>
 

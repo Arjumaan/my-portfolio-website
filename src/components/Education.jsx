@@ -111,61 +111,61 @@ const Education = () => {
 
   const timelineData = [
     {
-      period: "2019 - 2023",
-      title: "Bachelor of Engineering",
-      subtitle: "Vasavi College of Engineering (ECE)",
-      description: "Focused on embedded systems, software engineering, and algorithm design. Developed a strong foundation in computer science principles.",
+      period: "2022 - 2025",
+      title: "B.Sc Computer Science (Cyber Security)",
+      subtitle: "Rathinam College of Arts and Science",
+      description: "specialized in Cybersecurity, Ethical Hacking, and Network Security.",
       icon: GraduationCap,
       iconBg: "from-indigo-500/30 to-purple-500/30",
       badgeGradient: "from-indigo-500/20 to-purple-500/20",
       badgeBorder: "border-indigo-500/30",
       ringColor: "border-indigo-500",
-      achievements: ["Top 10%", "Tech Lead"]
+      achievements: ["Top Performer", "Security Researcher"]
     },
     {
-      period: "2023 - Present",
-      title: "Competitive Programming Lead",
-      subtitle: "Google Developer Group & CodeChef",
-      description: "Leading 50+ students in weekly algorithm workshops. Personally solved 600+ DSA problems across major platforms.",
+      period: "Present",
+      title: "Lead - ByteForge",
+      subtitle: "Innovative Tech Community",
+      description: "Leading a community where code, creativity, and collaboration collide. Mentoring aspiring developers and building meaningful projects.",
       icon: Briefcase,
       iconBg: "from-pink-500/30 to-rose-500/30",
       badgeGradient: "from-pink-500/20 to-rose-500/20",
       badgeBorder: "border-pink-500/30",
       ringColor: "border-pink-500",
-      achievements: ["4★ CodeChef", "600+ Problems"]
+      achievements: ["Community Leader", "Mentor"]
     },
     {
-      period: "2023",
-      title: "Hackathon Champion",
-      subtitle: "IWD Hackathon by Google Developer Group",
-      description: "Built a safety-focused solution with real-time geolocation. Won first place among 100+ participating teams.",
+      period: "Certifications",
+      title: "12x Certified Professional",
+      subtitle: "Google, Microsoft, IBM, AWS, and more",
+      description: "Continuously upskilling through professional certifications in Cybersecurity, AI, and Cloud Computing.",
       icon: Trophy,
       iconBg: "from-yellow-500/30 to-orange-500/30",
       badgeGradient: "from-yellow-500/20 to-orange-500/20",
       badgeBorder: "border-yellow-500/30",
       ringColor: "border-yellow-500",
-      achievements: ["1st Place", "100+ Teams"]
+      achievements: ["80+ Courses", "Multi-Domain"]
     },
     {
-      period: "2017 - 2019",
-      title: "Pre-University Education",
-      subtitle: "Sri Chaitanya Junior College (MPC)",
-      description: "Strong foundation in Mathematics, Physics, and Chemistry. Developed analytical thinking and problem-solving skills.",
-      icon: GraduationCap,
+      period: "Internship",
+      title: "Industry Internship",
+      subtitle: "Cybersecurity & Development",
+      description: "Gained hands-on experience in real-world security systems and application development.",
+      icon: Briefcase,
       iconBg: "from-cyan-500/30 to-teal-500/30",
       badgeGradient: "from-cyan-500/20 to-teal-500/20",
       badgeBorder: "border-cyan-500/30",
       ringColor: "border-cyan-500",
-      achievements: ["INMO Regionalist"]
+      achievements: ["Practical Experience"]
     }
   ];
 
   const achievements = [
-    { title: "IWD Hackathon Winner", description: "Google Developer Group Hyderabad" },
-    { title: "4★ CodeChef Rating", description: "600+ problems solved across platforms" },
-    { title: "CP Club Lead", description: "Leading workshops for 50+ students" },
-    { title: "National Handball", description: "Goalkeeper for Kendriya Vidyalaya team" },
-    { title: "INMO Regionalist", description: "2019 Indian National Mathematics Olympiad" },
+    { title: "ByteForge Lead", description: "Leading a tech community" },
+    { title: "12x Certified", description: "Google, Microsoft, AWS, etc." },
+    { title: "Public Speaker", description: "Sharing insights on tech" },
+    { title: "Mentor", description: "Guiding aspiring developers" },
+    { title: "120+ Projects", description: "Extensive practical portfolio" },
   ];
 
   return (

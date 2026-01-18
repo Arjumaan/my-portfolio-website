@@ -1,254 +1,194 @@
-import { useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Layout, Server, Database, Cloud, Terminal, Cpu,
-  Sparkles, ChevronRight, Zap, Braces
-} from 'lucide-react';
+import { useRef } from 'react';
+import { motion, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { Braces, Zap } from 'lucide-react';
 
-// Animated Skill Bar
-const SkillBar = ({ skill, level, color, delay }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    whileInView={{ opacity: 1, x: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay, duration: 0.5 }}
-    className="group"
-  >
-    <div className="flex justify-between items-center mb-2">
-      <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{skill}</span>
-      <span className="text-xs font-mono text-white/40">{level}%</span>
-    </div>
-    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-      <motion.div
-        initial={{ width: 0 }}
-        whileInView={{ width: `${level}%` }}
-        viewport={{ once: true }}
-        transition={{ delay: delay + 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className={`h-full rounded-full bg-gradient-to-r ${color}`}
-      />
-    </div>
-  </motion.div>
-);
+// ========== GLASS CARD WITH 3D TILT ==========
+const GlassCard = ({ children, className = "", delay = 0, span = 1 }) => {
+  const cardRef = useRef(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-// Skill Category Card with Hover Effects
-const SkillCategory = ({ category, index }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const Icon = category.icon;
+  const rotateX = useSpring(useTransform(mouseY, [-200, 200], [3, -3]), { stiffness: 100, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-200, 200], [-3, 3]), { stiffness: 100, damping: 20 });
+
+  const handleMouseMove = (e) => {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mouseX.set(e.clientX - rect.left - rect.width / 2);
+    mouseY.set(e.clientY - rect.top - rect.height / 2);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
+      ref={cardRef}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="group relative"
+      transition={{ delay, duration: 0.6 }}
+      on MouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+        gridColumn: `span ${span}`,
+      }}
+      className={`relative group ${className}`}
     >
-      <div className="relative p-8 h-full rounded-3xl bg-gradient-to-br from-white/[0.03] to-transparent border border-white/[0.05] overflow-hidden transition-all duration-500 hover:border-white/10">
-        {/* Animated Gradient Background */}
-        <motion.div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-          style={{
-            background: `radial-gradient(400px circle at 50% 0%, ${category.glowColor}15, transparent 60%)`,
-          }}
-        />
+      {/* Glass effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl border border-white/20" />
 
-        {/* Icon */}
-        <motion.div
-          className={`relative z-10 w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br ${category.iconBg} border border-white/10 flex items-center justify-center shadow-lg`}
-          animate={isHovered ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Icon className="w-8 h-8 text-white" />
-        </motion.div>
+      {/* Gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-cyan-500/10 group-hover:via-purple-500/10 group-hover:to-pink-500/10 rounded-2xl transition-all duration-500" />
 
-        {/* Title */}
-        <h3 className="relative z-10 text-xl font-bold text-white mb-4 group-hover:gradient-text transition-all duration-500">
-          {category.name}
-        </h3>
-
-        {/* Skills List */}
-        <div className="relative z-10 space-y-3">
-          {category.skills.map((skill, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 + i * 0.05 }}
-              className="flex items-center gap-3 group/item"
-            >
-              <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${category.dotColor} group-hover/item:scale-150 transition-transform`} />
-              <span className="text-sm text-white/60 group-hover/item:text-white/90 transition-colors">
-                {skill}
-              </span>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Decorative Corner */}
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/[0.03] to-transparent rounded-bl-[60px]" />
+      {/* Content */}
+      <div className="relative z-10 p-6">
+        {children}
       </div>
     </motion.div>
-  );
-};
-
-// Animated Tech Logo Marquee
-const TechMarquee = () => {
-  const techs = [
-    "React", "TypeScript", "Node.js", "Python", "AWS", "Docker",
-    "PostgreSQL", "MongoDB", "Next.js", "TailwindCSS", "Prisma", "GraphQL"
-  ];
-
-  return (
-    <div className="relative overflow-hidden py-8 my-16">
-      <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10" />
-      <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10" />
-
-      <motion.div
-        animate={{ x: [0, "-50%"] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="flex gap-8 whitespace-nowrap"
-      >
-        {[...techs, ...techs].map((tech, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 px-6 py-3 rounded-full bg-white/5 border border-white/10"
-          >
-            <Zap className="w-4 h-4 text-indigo-400" />
-            <span className="text-sm font-medium text-white/70">{tech}</span>
-          </div>
-        ))}
-      </motion.div>
-    </div>
   );
 };
 
 const Skills = () => {
   const ref = useRef(null);
 
-  const skillCategories = [
+  const badgeGroups = [
     {
-      name: "Frontend Mastery",
-      icon: Layout,
-      iconBg: "from-indigo-500/20 to-blue-500/20",
-      glowColor: "#6366f1",
-      dotColor: "from-indigo-500 to-blue-500",
-      skills: ["React.js / Next.js", "TypeScript", "Framer Motion", "TailwindCSS", "Redux / Zustand", "Performance Optimization"]
+      title: "Languages",
+      badges: [
+        { src: "https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white", alt: "C" },
+        { src: "https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white", alt: "C++" },
+        { src: "https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white", alt: "CSS3" },
+        { src: "https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white", alt: "Java" },
+        { src: "https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white", alt: "HTML5" },
+        { src: "https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E", alt: "JavaScript" },
+        { src: "https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54", alt: "Python" },
+        { src: "https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white", alt: "Rust" },
+        { src: "https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white", alt: "TypeScript" },
+      ]
     },
     {
-      name: "Backend Engineering",
-      icon: Server,
-      iconBg: "from-green-500/20 to-emerald-500/20",
-      glowColor: "#10b981",
-      dotColor: "from-green-500 to-emerald-500",
-      skills: ["Node.js / Express", "Python / FastAPI", "REST & GraphQL APIs", "WebSockets", "Microservices", "Authentication (JWT/OAuth)"]
+      title: "Cloud & DevOps",
+      badges: [
+        { src: "https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white", alt: "AWS" },
+        { src: "https://img.shields.io/badge/azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white", alt: "Azure" },
+        { src: "https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white", alt: "Google Cloud" },
+        { src: "https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white", alt: "Docker" },
+        { src: "https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white", alt: "Kubernetes" },
+        { src: "https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white", alt: "Terraform" },
+      ]
     },
     {
-      name: "Data & Databases",
-      icon: Database,
-      iconBg: "from-orange-500/20 to-amber-500/20",
-      glowColor: "#f59e0b",
-      dotColor: "from-orange-500 to-amber-500",
-      skills: ["PostgreSQL", "MongoDB", "Prisma ORM", "Redis Caching", "DynamoDB", "Data Modeling"]
+      title: "Frameworks & Libraries",
+      badges: [
+        { src: "https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB", alt: "React" },
+        { src: "https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white", alt: "NodeJS" },
+        { src: "https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white", alt: "Next JS" },
+        { src: "https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB", alt: "Express.js" },
+        { src: "https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white", alt: "Flask" },
+        { src: "https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white", alt: "Django" },
+      ]
     },
     {
-      name: "Cloud & DevOps",
-      icon: Cloud,
-      iconBg: "from-cyan-500/20 to-sky-500/20",
-      glowColor: "#06b6d4",
-      dotColor: "from-cyan-500 to-sky-500",
-      skills: ["AWS (Lambda, S3, EC2)", "Docker", "CI/CD Pipelines", "Vercel / Netlify", "GitHub Actions", "Monitoring & Logging"]
+      title: "Data & ML",
+      badges: [
+        { src: "https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white", alt: "NumPy" },
+        { src: "https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white", alt: "Pandas" },
+        { src: "https://img.shields.io/badge/TensorFlow-%23FF6F00.svg?style=for-the-badge&logo=TensorFlow&logoColor=white", alt: "TensorFlow" },
+        { src: "https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white", alt: "PyTorch" },
+        { src: "https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white", alt: "scikit-learn" },
+      ]
     },
     {
-      name: "Tools & Workflow",
-      icon: Terminal,
-      iconBg: "from-purple-500/20 to-violet-500/20",
-      glowColor: "#8b5cf6",
-      dotColor: "from-purple-500 to-violet-500",
-      skills: ["Git / GitHub", "VS Code", "Figma", "Postman", "Jest / Vitest", "Agile / Scrum"]
+      title: "Databases",
+      badges: [
+        { src: "https://img.shields.io/badge/mysql-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white", alt: "MySQL" },
+        { src: "https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white", alt: "Postgres" },
+        { src: "https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white", alt: "MongoDB" },
+        { src: "https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white", alt: "Redis" },
+      ]
     },
     {
-      name: "AI & Emerging Tech",
-      icon: Cpu,
-      iconBg: "from-pink-500/20 to-rose-500/20",
-      glowColor: "#ec4899",
-      dotColor: "from-pink-500 to-rose-500",
-      skills: ["OpenAI / Gemini APIs", "LangChain", "Prompt Engineering", "Three.js / WebGL", "WebAssembly", "Real-time Systems"]
-    }
+      title: "Cybersecurity Tools",
+      badges: [
+        { src: "https://img.shields.io/badge/-Wireshark-%231679A7?style=for-the-badge&logo=wireshark&logoColor=white", alt: "Wireshark" },
+        { src: "https://img.shields.io/badge/-Metasploit-ED1C24?style=for-the-badge&logo=metasploit&logoColor=white", alt: "Metasploit" },
+        { src: "https://img.shields.io/badge/-Burp_Suite-FF6633?style=for-the-badge&logo=burp-suite&logoColor=white", alt: "Burp Suite" },
+        { src: "https://img.shields.io/badge/-Nmap-4682B4?style=for-the-badge", alt: "Nmap" },
+      ]
+    },
   ];
 
   return (
-    <section id="skills" className="section-padding relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 grid-bg opacity-30"></div>
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[150px] pointer-events-none" />
+    <section id="skills" ref={ref} className="py-24 relative overflow-hidden bg-black">
+      {/* Gradient Mesh Background */}
+      <div className="absolute inset-0">
+        <motion.div
+          className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-3xl opacity-20"
+          style={{
+            background: 'radial-gradient(circle, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%)',
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, -100, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
+      </div>
 
-      <div className="container-custom relative z-10" ref={ref}>
+      <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-xl"
           >
-            <Braces className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-medium text-purple-300">Technical Expertise</span>
+            <Braces className="w-4 h-4 text-cyan-400" />
+            <span className="text-sm font-medium text-cyan-400">Technical Arsenal</span>
           </motion.div>
 
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6">
-            <span className="text-white">Skills that</span>
-            <br />
-            <span className="gradient-text">Power Innovation</span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6">
+            Skills & <span className="text-white drop-shadow-[0_0_20px_rgba(6,182,212,0.8)]">Technologies</span>
           </h2>
-
-          <p className="text-white/50 text-lg md:text-xl max-w-2xl mx-auto">
-            A comprehensive toolkit honed through years of building production-grade applications.
-          </p>
         </motion.div>
 
-        {/* Tech Marquee */}
-        <TechMarquee />
-
-        {/* Skills Grid */}
+        {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {skillCategories.map((category, index) => (
-            <SkillCategory key={index} category={category} index={index} />
+          {badgeGroups.map((group, groupIndex) => (
+            <GlassCard key={groupIndex} delay={groupIndex * 0.1}>
+              <div className="flex items-center gap-3 mb-4">
+                <Zap className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-lg font-bold text-white">{group.title}</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {group.badges.map((badge, badgeIndex) => (
+                  <motion.img
+                    key={badgeIndex}
+                    src={badge.src}
+                    alt={badge.alt}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: groupIndex * 0.1 + badgeIndex * 0.02 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    className="transition-transform"
+                  />
+                ))}
+              </div>
+            </GlassCard>
           ))}
         </div>
-
-        {/* CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-24 p-8 md:p-12 rounded-3xl glass-vibrant border border-white/10 text-center"
-        >
-          <div className="max-w-2xl mx-auto">
-            <Sparkles className="w-10 h-10 text-yellow-400 mx-auto mb-6" />
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Build Something Amazing?
-            </h3>
-            <p className="text-white/60 mb-8">
-              Let&apos;s combine these skills to create your next breakthrough project.
-            </p>
-            <a
-              href="#contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all duration-300"
-            >
-              Start a Conversation
-              <ChevronRight className="w-5 h-5" />
-            </a>
-          </div>
-        </motion.div>
       </div>
     </section>
   );
