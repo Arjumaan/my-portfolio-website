@@ -1,120 +1,141 @@
-import { motion } from 'framer-motion';
-import { Heart, ArrowUp, Github, Linkedin, Twitter } from 'lucide-react';
+/* eslint-disable react/no-unknown-property */
+import { useRef, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import { Github, Linkedin, Instagram, Mail, ChevronRight } from 'lucide-react';
 
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
+const ParticleWave = () => {
+  const pointsRef = useRef();
+  
+  const count = 3000;
+  const positions = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 30; // X
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 2;  // Y
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 30; // Z
+    }
+    return pos;
+  }, [count]);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const navLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'Projects', href: '#projects' },
-    { name: 'Skills', href: '#skills' },
-    { name: 'Journey', href: '#education' },
-    { name: 'Contact', href: '#contact' },
-  ];
-
-  const socialLinks = [
-    { icon: Github, href: 'https://github.com/Arjumaan', label: 'GitHub' },
-    { icon: Linkedin, href: 'https://www.linkedin.com/in/Arjumaan', label: 'LinkedIn' },
-  ];
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime() * 0.4;
+    const array = pointsRef.current.geometry.attributes.position.array;
+    
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const x = array[i3];
+      const z = array[i3 + 2];
+      // Organic, smooth wave math
+      array[i3 + 1] = Math.sin(x * 0.4 + time) * Math.cos(z * 0.4 + time) * 1.5;
+    }
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+    pointsRef.current.rotation.y = time * 0.1;
+  });
 
   return (
-    <footer className="relative overflow-hidden">
-      {/* Gradient Divider */}
-      <div className="h-[1px] bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
-
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/5 to-transparent pointer-events-none" />
-
-      <div className="container-custom relative z-10 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
-          {/* Brand */}
-          <div>
-            <a href="#home" className="inline-block mb-6">
-              <img
-                src="/ar-logo.png"
-                alt="AR Logo"
-                className="h-24 w-auto"
-              />
-            </a>
-            <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-              Turning Ideas into Impact | Security Architect & AI/ML Engineer.
-            </p>
-          </div>
-
-          {/* Navigation */}
-          <div>
-            <h4 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Quick Links</h4>
-            <nav className="grid grid-cols-2 gap-3">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-white/40 hover:text-white text-sm transition-colors duration-300 hover:translate-x-1 transform inline-block"
-                >
-                  {link.name}
-                </a>
-              ))}
-            </nav>
-          </div>
-
-          {/* Social */}
-          <div>
-            <h4 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Connect</h4>
-            <div className="flex gap-3 mb-6">
-              {socialLinks.map((social) => (
-                <motion.a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1, y: -3 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/10 transition-all duration-300"
-                >
-                  <social.icon className="w-5 h-5 text-white/60 hover:text-indigo-400" />
-                </motion.a>
-              ))}
-            </div>
-            <a
-              href="mailto:arjumaan21@gmail.com"
-              className="text-white/40 hover:text-indigo-400 text-sm transition-colors"
-            >
-              arjumaan21@gmail.com
-            </a>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/5">
-          <p className="text-white/30 text-sm flex items-center gap-2 mb-4 md:mb-0">
-            © {currentYear} Arjumaan M. Built with
-            <Heart className="w-4 h-4 text-pink-500 animate-pulse" />
-            using React & TailwindCSS
-          </p>
-
-          {/* Back to Top */}
-          <motion.button
-            onClick={scrollToTop}
-            whileHover={{ scale: 1.1, y: -3 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm hover:border-indigo-500/30 hover:text-white transition-all duration-300"
-          >
-            <ArrowUp className="w-4 h-4" />
-            Back to Top
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Large Background Text */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[15vw] font-extrabold text-white/[0.02] whitespace-nowrap pointer-events-none select-none">
-        ARJUMAAN
-      </div>
-    </footer>
+    <points ref={pointsRef} position={[0, -2, -5]}>
+      <bufferGeometry>
+        <bufferAttribute 
+          attach="attributes-position" 
+          count={positions.length / 3} 
+          array={positions} 
+          itemSize={3} 
+        />
+      </bufferGeometry>
+      <pointsMaterial 
+        size={0.06} 
+        color="#4ade80" 
+        transparent 
+        opacity={0.8} 
+        blending={THREE.AdditiveBlending} 
+        depthWrite={false} 
+      />
+    </points>
   );
 };
 
-export default Footer;
+export default function Footer() {
+  return (
+    <footer className="relative mt-24 border-t border-neu-pressed overflow-hidden bg-neu-bg min-h-[500px] flex items-end">
+      
+      {/* 3D Background */}
+      <div className="absolute inset-0 z-0 h-full pointer-events-none">
+        <Canvas camera={{ position: [0, 2, 5], fov: 60 }}>
+          <fog attach="fog" args={['#1A1B1E', 5, 20]} />
+          <ParticleWave />
+        </Canvas>
+        
+        {/* Gradients to fade out the top edge */}
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-neu-bg to-transparent z-10" />
+      </div>
+
+      {/* Footer Content */}
+      <div className="relative z-20 w-full py-16 pb-8">
+        <div className="neu-container">
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+            
+            {/* Brand Section */}
+            <div className="col-span-1 md:col-span-5 flex flex-col gap-6">
+              <div className="w-20 h-20 bg-neu-bg shadow-neu-pressed p-2 flex items-center justify-center rounded-full border border-neu-accent/20">
+                <img src="/ar-logo.png" alt="AR Logo" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-display font-bold text-neu-text tracking-wide mb-2">ARJUMAAN M.</h2>
+                <p className="text-sm font-medium text-neu-text/70 leading-relaxed max-w-sm">
+                  Architecting secure, highly scalable AI platforms and robust decentralized architectures. Building the infrastructure of tomorrow.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="col-span-1 md:col-span-3 flex flex-col gap-4 md:pt-4">
+              <h3 className="text-lg font-bold text-neu-accent tracking-widest uppercase mb-2">Navigation</h3>
+              <a href="#about" className="flex items-center gap-2 text-neu-text/70 hover:text-cyan-400 transition-colors">
+                <ChevronRight size={16} /> Beyond the Code
+              </a>
+              <a href="#experience" className="flex items-center gap-2 text-neu-text/70 hover:text-cyan-400 transition-colors">
+                <ChevronRight size={16} /> Professional Experience
+              </a>
+              <a href="#projects" className="flex items-center gap-2 text-neu-text/70 hover:text-cyan-400 transition-colors">
+                <ChevronRight size={16} /> Project Vault
+              </a>
+              <a href="#contact" className="flex items-center gap-2 text-neu-text/70 hover:text-cyan-400 transition-colors">
+                <ChevronRight size={16} /> Secure Comms
+              </a>
+            </div>
+
+            {/* Social Nodes */}
+            <div className="col-span-1 md:col-span-4 flex flex-col gap-4 md:pt-4 md:items-end">
+              <h3 className="text-lg font-bold text-neu-accent tracking-widest uppercase mb-2">Social Nodes</h3>
+              <div className="flex flex-wrap gap-4 md:justify-end">
+                <a href="https://github.com/Arjumaan" target="_blank" rel="noreferrer" className="w-12 h-12 bg-neu-bg shadow-neu-flat flex items-center justify-center rounded-full hover:text-neu-accent hover:shadow-neu-pressed transition-all group">
+                  <Github size={20} className="group-hover:scale-110 transition-transform" />
+                </a>
+                <a href="https://www.linkedin.com/in/arjumaan/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-neu-bg shadow-neu-flat flex items-center justify-center rounded-full hover:text-neu-accent hover:shadow-neu-pressed transition-all group">
+                  <Linkedin size={20} className="group-hover:scale-110 transition-transform" />
+                </a>
+                <a href="https://www.instagram.com/mr.maan_offxl/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-neu-bg shadow-neu-flat flex items-center justify-center rounded-full hover:text-neu-accent hover:shadow-neu-pressed transition-all group">
+                  <Instagram size={20} className="group-hover:scale-110 transition-transform" />
+                </a>
+                <a href="mailto:founder@sentrasec.in" className="w-12 h-12 bg-neu-bg shadow-neu-flat flex items-center justify-center rounded-full hover:text-neu-accent hover:shadow-neu-pressed transition-all group">
+                  <Mail size={20} className="group-hover:scale-110 transition-transform" />
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-neu-accent/20 to-transparent mb-8"></div>
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-neu-text/40 tracking-widest uppercase">
+            <p>&copy; {new Date().getFullYear()} ARJUMAAN M. ALL RIGHTS RESERVED.</p>
+            <p>POWERED BY SENTRASEC AI SYSTEMS</p>
+          </div>
+
+        </div>
+      </div>
+    </footer>
+  );
+}
